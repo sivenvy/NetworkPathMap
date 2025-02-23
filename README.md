@@ -2,7 +2,7 @@
 This is a network visualization and path analysis tool built using PyQt6 and Leaflet.js. It allows users to display network nodes, visualize connectivity, compute paths, and interactively analyze circuit data.
 
 ## Features
-✔ Interactive Map – Displays locations and their connections on a zoomable, draggable map.<br>
+✔ Interactive Map – Displays locations and their connections on a zoomable, draggable map, user can chose map tiles sources from OpenStreetMap or Carto.<br>
 ✔ Node-Based and Device-Based Topology – Supports both location-based and device-based network graphs.<br>
 ✔ Path Calculation – Computes all possible paths between selected nodes using DFS.<br>
 ✔ Manual Path Design – Allows users to manually select paths and examine circuit details.<br>
@@ -32,12 +32,30 @@ This is a network visualization and path analysis tool built using PyQt6 and Lea
 - Select circuit to show circuit detail information.<br>
 ## Screenshots
 
-TESTIMG
+### Displays locations and their connections on a zoomable, draggable map.<br>Highlights paths and nodes dynamically based on selection
+![screenshot1](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/Network%20Path%20Map%202025-02-23%2010-39-21.gif "gif1")
+### Path Calculation
+![screenshot2](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/Network%20Path%20Map%202025-02-23%2010-44-57.gif "gif2")
+### Manual Path Design
+![screenshot3](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/Network%20Path%20Map%202025-02-23%2010-43-20.gif "gif3")
+### Examine Circuit Detail
+![screenshot4](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/01.JPG "ss1")
 
 ---
 
+## Technologies and Tools Used
+This project utilizes the following technologies and tools:
+
+- Python - The core programming language responsible for data processing and GUI control.
+- PyQt6 - A GUI framework for building the interactive interface.
+- PyQt6-WebEngine - Enables embedding web content in PyQt6, used for displaying the map.
+- Leaflet.js - A JavaScript mapping library for handling markers, paths, and interactions.
+- pandas - Used for reading, filtering, and processing CSV data.
+- JavaScript (Frontend) - Works with QWebChannel to enable bidirectional communication between Python and the web interface, handling marker interactions and path visualization.
+
+
 ## License
-This project is for academic demonstration purposes. Do not use it for commercial or proprietary applications.
+This project is for academic demonstration purposes only.
 
 ---
 ## **Installation**  
