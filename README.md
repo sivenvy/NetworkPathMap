@@ -51,7 +51,6 @@ This is a network visualization and path analysis tool built using PyQt6 and Lea
 ## Technologies and Tools Used
 This project utilizes the following technologies and tools:
 
-- Python - The core programming language responsible for data processing and GUI control.
 - PyQt6 - A GUI framework for building the interactive interface.
 - PyQt6-WebEngine - Enables embedding web content in PyQt6, used for displaying the map.
 - [Leaflet.js](https://leafletjs.com/) - A JavaScript mapping library for handling markers, paths, and interactions.
