@@ -61,6 +61,7 @@ class PyBridge(QObject):
 
     @pyqtSlot()
     def addMarker(self):
+        #暫時取消使用者編輯地點，棄用
         """將新地點存入 locations.csv，並刷新 UI"""
         name = self.window.name_input.text().strip()
         if name and self.window.coord_display.text():
@@ -103,7 +104,7 @@ class MapApp(QMainWindow):
         super().__init__()
         self.setWindowTitle("Map Application")
         self.setGeometry(100, 100, 1200, 800)
-
+        
         # 建立主視窗
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -137,8 +138,8 @@ class MapApp(QMainWindow):
 
         
         # 創建純文字區域
-        self.info_box = QTextEdit()
-        self.info_box.setReadOnly(True)
+        self.info_box = QListWidget()
+        self.info_box.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
 
         # 把勾選框區域和文字區域加入 Tab1
         self.tab1_layout.addWidget(self.info_box)     # 這裡顯示文字
@@ -148,6 +149,7 @@ class MapApp(QMainWindow):
         # 讀取 CSV 資料並顯示
         self.location_data = {}
         self.load_location_data()
+        
         #--------------#
         #  變數存放區  #
         #--------------#
@@ -219,8 +221,12 @@ class MapApp(QMainWindow):
         self.button_path = QPushButton("計算路由")
         self.tab2_layout.addWidget(self.button_path)
         # 顯示路由區域
+        path_list_label_layout = QHBoxLayout()
         self.path_list_label = QLabel("可用路徑")
-        self.tab2_layout.addWidget(self.path_list_label)
+        self.two_path_checkbox = QCheckBox("計算最佳雙路由")
+        path_list_label_layout.addWidget(self.path_list_label)
+        path_list_label_layout.addWidget(self.two_path_checkbox)
+        self.tab2_layout.addLayout(path_list_label_layout)
         self.path_list = QListWidget()
         self.path_list.setSelectionMode(QListWidget.SelectionMode.SingleSelection)  # ✅ 設定只能選一行
         self.path_list.itemClicked.connect(self.on_path_selected)  # ✅ 綁定點擊事件
@@ -280,8 +286,8 @@ class MapApp(QMainWindow):
         # 按鈕點擊事件
         self.button_path.clicked.connect(self.dfs)
         #self.button1.clicked.connect(self.bridge.addMarker)
-
-
+        # 建立機房-設備對應
+        self.build_lacation_device_list()
 
 
 
@@ -292,6 +298,7 @@ class MapApp(QMainWindow):
 
 
     def refresh_locations(self):
+        #暫時取消使用者編輯地點，棄用
         """重新載入 locations.csv，更新 Checkbox"""
         # 清除現有的 Checkbox
         for i in reversed(range(self.checkbox_layout.count())):
@@ -348,9 +355,38 @@ class MapApp(QMainWindow):
                     checkbox.stateChanged.connect(self.on_checkbox_state_changed)  # 當狀態改變時觸發
                     self.checkbox_layout.addWidget(checkbox)
                     self.location_data[checkbox] = {'name': name, 'lat': lat, 'lng': lng}
-
         else:
             self.checkbox_layout.addWidget(QLabel("⚠️ 無法找到 CSV 檔案"))
+
+
+    def build_lacation_device_list(self):
+        
+        csv_file = "PTNGES.csv"  # 這是你的 .csv 檔案
+
+        if not os.path.exists(csv_file):
+            print("⚠️ 找不到 xxxxptn.csv")
+            self.filtered_ptn_data = pd.DataFrame()  # 清空暫存資料
+            return  
+
+        # 讀取 CSV
+        df = pd.read_csv(csv_file, encoding="utf-8")
+        print("Loaded PTN csv")
+        for _, row in df.iterrows():
+            A, B = row["A地點"], row["B地點"]
+            A_dev = row["A設備流水號"]
+            B_dev = row["B設備流水號"]
+
+            # ✅ 生成設備節點名稱
+            A_node = f"{A}-{A_dev}"
+            B_node = f"{B}-{B_dev}"
+
+            # ✅ 設備對應地點記錄
+            self.device_to_location[A_node] = A
+            self.device_to_location[B_node] = B
+            self.location_to_devices[A].add(A_node)
+            self.location_to_devices[B].add(B_node)
+            print("📌 設備對應機房:", self.device_to_location)
+
 
     def on_checkbox_state_changed(self):
         """當勾選框的狀態改變時，通知 JavaScript 新增或移除標記"""
@@ -395,7 +431,14 @@ class MapApp(QMainWindow):
             result_text = "⚠️ 無對應的 PTN 資料"
 
         # ✅ 更新 info_box
-        self.info_box.setText(f"{name}:\n\n{result_text}")
+        self.info_box.clear()    
+        self.info_box.addItem(f"選取的地點:{name}")
+        self.info_box.addItem(result_text)
+        self.info_box.addItem(f"地點設備清單:")
+        devices = sorted(self.location_to_devices[name])
+        for device in devices:
+            self.info_box.addItem(device)  
+
 
         # ✅ 傳送 Highlight 指令到 HTML
                 
@@ -531,7 +574,7 @@ class MapApp(QMainWindow):
             
     def build_graph_by_device(self, selected_set):
         """根據 A設備流水號 - B設備流水號 建立設備拓樸"""
-        self.device_to_location = {}  # ✅ 設備對應機房名稱
+        #self.device_to_location = {}  # ✅ 設備對應機房名稱
 
         # **確保 graph 初始化**
         self.graph = {}
@@ -545,11 +588,6 @@ class MapApp(QMainWindow):
             A_node = f"{A}-{A_dev}"
             B_node = f"{B}-{B_dev}"
 
-            # ✅ 設備對應地點記錄
-            self.device_to_location[A_node] = A
-            self.device_to_location[B_node] = B
-            self.location_to_devices[A].add(A_node)
-            self.location_to_devices[B].add(B_node)
 
             # ✅ 確保 graph 內有這些節點
             if A in selected_set and B in selected_set:
@@ -563,7 +601,6 @@ class MapApp(QMainWindow):
                 self.graph[B_node].add(A_node)
 
         print("✅ 設備拓樸建立完成:", self.graph)
-        print("📌 設備對應機房:", self.device_to_location)
 
         if self.show_edges_checkbox.isChecked():
             self.toggle_edges() #若有勾選顯示edge 更新edge
@@ -639,12 +676,62 @@ class MapApp(QMainWindow):
 
         return paths
     
+    def find_two_disjoint_paths(self,all_paths):
+        """
+        從 `all_paths` 中找出兩條「中間節點不重複」的最佳路徑，使總共經過的節點數最少。
+        :param all_paths: list of list (所有找到的路徑)
+        :return: (list, list) - 兩條不重複的最佳路徑
+        """
+        if len(all_paths) < 2:
+            print("⚠️ 無法找到兩條不重複的路徑")
+            return None, None
+
+        best_pair = None
+        min_total_nodes = float("inf")
+
+        # 遍歷所有可能的第一條路徑
+        for i in range(len(all_paths)):
+            path_1 = all_paths[i]
+            core_1 = set(path_1[1:-1])  # 取中間節點（排除起點與終點）
+
+            # 遍歷可能的第二條路徑
+            for j in range(i + 1, len(all_paths)):
+                path_2 = all_paths[j]
+                core_2 = set(path_2[1:-1])  # 取中間節點（排除起點與終點）
+
+                overlap = len(core_1 & core_2)  # 計算中間節點的重疊數量
+                total_nodes = len(set(path_1) | set(path_2))  # 計算總節點數（降低成本）
+
+                # ✅ 選擇完全不重複的最佳組合
+                if overlap == 0 and total_nodes < min_total_nodes:
+                    best_pair = (path_1, path_2)
+                    min_total_nodes = total_nodes
+
+        if best_pair:
+            print(f"✅ 找到兩條最佳路徑（中間節點不重複）:")
+            print(f"  路徑 1: {' → '.join(best_pair[0])}")
+            print(f"  路徑 2: {' → '.join(best_pair[1])}")
+            return best_pair
+        else:
+            print("⚠️ 找不到完全不重複的兩條路徑，可能需要放寬條件")
+            return None, None
+    
     def dfs(self):
         # 執行 DFS 搜尋 A → E 的所有路徑
         all_paths = self.find_all_paths(self.start_input.text(),self.end_input.text())
         sorted_paths = sorted(all_paths, key=len)
-        # 輸出結果
+        
+
         self.path_list.clear()  # 清除舊的內容
+        # 輸出結果
+        if self.two_path_checkbox.isChecked():
+            path_1, path_2 = self.find_two_disjoint_paths(all_paths)
+            if path_1 and path_2:
+                self.path_list.addItem(QListWidgetItem(f"最佳路徑 1: {' → '.join(path_1)}"))
+                self.path_list.addItem(QListWidgetItem(f"最佳路徑 2: {' → '.join(path_2)}"))
+                self.path_list.addItem(f"其他路徑: ")
+            else:
+                self.path_list.addItem(f"⚠️ 無法找到完全不重複的兩條路徑")
         for i, path in enumerate(sorted_paths, 1):
             item = QListWidgetItem(f"路徑 {i}: {' → '.join(path)}")
             self.path_list.addItem(item)  # 新增到 QListWidget
