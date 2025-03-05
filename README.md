@@ -1,6 +1,7 @@
 # NetworkPathMap
-This is a **network visualization and path analysis tool** built using PyQt6 and Leaflet.js. It allows users to display network nodes, visualize connectivity, compute paths, and interactively analyze circuit data.
-![screenshot1](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/s1.JPG "gif1")
+This is a **network visualization and path analysis tool** built using PyQt6 and Leaflet.js.<br>
+It allows users to display network nodes, visualize connectivity, compute paths, and interactively analyze circuit data.
+![screenshot1](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/Network%20Path%20Map%202025-02-23%2010-39-21.gif "gif1")
 ## Features
 - Interactive Map – Displays locations and their connections on a zoomable, draggable map, user can chose map tiles sources from OpenStreetMap or Carto.<br>
 - Node-Based and Device-Based Topology – Supports both **location-based** and **device-based** network graphs.<br>
@@ -38,9 +39,9 @@ This is a **network visualization and path analysis tool** built using PyQt6 and
 ### Displays locations and their connections on a zoomable, draggable map.<br>Highlights paths and nodes dynamically based on selection
 ![screenshot1](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/Network%20Path%20Map%202025-02-23%2010-39-21.gif "gif1")
 ### Path Calculation
-![screenshot2](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/s2.JPG "gif2")
+![screenshot2](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/Network%20Path%20Map%202025-02-23%2010-42-00.gif "gif2")
 ### Manual Path Design
-![screenshot3](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/s3.JPG "gif3")
+![screenshot3](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/Network%20Path%20Map%202025-02-23%2010-43-20.gif "gif3")
 ### Working and Protection Path Design
 ![screenshot4](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/s4.JPG "ss1")
 ### Examine Circuit Detail
