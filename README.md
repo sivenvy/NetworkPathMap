@@ -1,9 +1,9 @@
 # NetworkPathMap
-This is a network visualization and path analysis tool built using PyQt6 and Leaflet.js. It allows users to display network nodes, visualize connectivity, compute paths, and interactively analyze circuit data.
-![screenshot1](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/Network%20Path%20Map%202025-02-23%2010-39-21.gif "gif1")
+This is a **network visualization and path analysis tool** built using PyQt6 and Leaflet.js. It allows users to display network nodes, visualize connectivity, compute paths, and interactively analyze circuit data.
+![screenshot1](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/s1.JPG "gif1")
 ## Features
 - Interactive Map – Displays locations and their connections on a zoomable, draggable map, user can chose map tiles sources from OpenStreetMap or Carto.<br>
-- Node-Based and Device-Based Topology – Supports both location-based and device-based network graphs.<br>
+- Node-Based and Device-Based Topology – Supports both **location-based** and **device-based** network graphs.<br>
 - Path Calculation – Computes all possible paths between selected nodes using DFS.<br>
 - Manual Path Design – Allows users to manually select paths and examine circuit details.<br>
 - CSV Data Parsing – Reads and filters network circuit data from CSV files.<br>
@@ -13,11 +13,11 @@ This is a network visualization and path analysis tool built using PyQt6 and Lea
 ## Usage
 
 ### Interface
-- Left Panel: Displays node information and available circuits, provides node filtering and route calculating operation.<br>
-- Right Panel: Displays an interactive map with selectable nodes.<br>
+- Left Panel: Displays node information and available circuits, **provides node filtering and route calculating operation**.<br>
+- Right Panel: Displays an **interactive map** with selectable nodes.<br>
 ### Graph Modes
 - Location-Based Mode (default): Builds topology using site names, useful when designing new physical route.<br>
-- Device-Based Mode: Uses equipment serial numbers to ensure accurate routing design.<br>
+- Device-Based Mode: Uses equipment serial numbers to ensure **accurate routing design**.<br>
 ### Path Calculation
 1. Select Start & End Points<br>
 2. Run Path Calculation (DFS-based)<br>
@@ -27,7 +27,7 @@ This is a network visualization and path analysis tool built using PyQt6 and Lea
 2. Right-click nodes to construct a custom route<br>
 3. Examine available path options<br>
 ### Protection Path Calculation
-- Calculate paths with different devices/nodes provide working and protection circuit pair with least cost<br>
+- Calculate paths with **different devices/nodes provide working and protection circuit pair** with least cost<br>
 ### Examine Circuit Detail
 - While path is calculated, available circuit will show on item box below segment by segment.<br>
 - Select circuit to show circuit detail information.<br>
@@ -38,11 +38,11 @@ This is a network visualization and path analysis tool built using PyQt6 and Lea
 ### Displays locations and their connections on a zoomable, draggable map.<br>Highlights paths and nodes dynamically based on selection
 ![screenshot1](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/Network%20Path%20Map%202025-02-23%2010-39-21.gif "gif1")
 ### Path Calculation
-![screenshot2](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/Network%20Path%20Map%202025-02-23%2010-44-57.gif "gif2")
+![screenshot2](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/s2.JPG "gif2")
 ### Manual Path Design
-![screenshot3](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/Network%20Path%20Map%202025-02-23%2010-43-20.gif "gif3")
-### Manual Path Design
-![screenshot4](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/03.JPG "ss1")
+![screenshot3](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/s3.JPG "gif3")
+### Working and Protection Path Design
+![screenshot4](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/s4.JPG "ss1")
 ### Examine Circuit Detail
 ![screenshot5](https://github.com/sivenvy/NetworkPathMap/blob/main/NetworkPathMap/screenshots/01.JPG "ss1")
 
