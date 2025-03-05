@@ -6,7 +6,7 @@ This is a **network visualization and path analysis tool** built using PyQt6 and
 - Node-Based and Device-Based Topology – Supports both **location-based** and **device-based** network graphs.<br>
 - Path Calculation – Computes all possible paths between selected nodes using DFS.<br>
 - Manual Path Design – Allows users to manually select paths and examine circuit details.<br>
-- CSV Data Parsing – Reads and filters network circuit data from CSV files.<br>
+- CSV Data Parsing – **Reads and filters network circuit data from previous database web crawler CSV files**.<br>
 - Edge and Node Highlighting – Highlights paths and nodes dynamically based on selection.<br>
 
 
