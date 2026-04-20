@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+
+    <style>
+        #map { height: 100vh; width: 100%; }
+        /* 右鍵選單的樣式 */
+        .context-menu {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+        }
+        .context-menu div {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .context-menu div:hover {
+            background: #eee;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+
+        <!-- 自訂右鍵選單 -->
+    <div id="contextMenu" class="context-menu">
+        <div id="setStart">設為起點</div>
+        <div id="setEnd">設為終點</div>
+        <div id="setManual">手動路徑</div>
+    </div>
+    <script>
+        // Carto 地圖來源
+        var cartoLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        // OpenStreetMap 地圖來源
+        var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+
+        // 設置地圖
+        var map = L.map('map').setView([24.1735, 120.6736], 12);
+
+        // 預設顯示 Carto 地圖
+        cartoLayer.addTo(map);
+
+        // 創建圖層控制面板
+        L.control.layers({
+            'Carto': cartoLayer,
+            'OpenStreetMap': osmLayer
+        }).addTo(map);
+
+        // 初始化 QWebChannel，讓 JavaScript 能與 Python 溝通
+        new QWebChannel(qt.webChannelTransport, function(channel) {
+            window.pybridge = channel.objects.pybridge;
+        });
+
+        let inLogMessage = false;  // 用來防止遞迴
+
+        console.log = function(message) {
+            if (!inLogMessage) {   // 只有在不是遞迴調用的情況下才執行
+                inLogMessage = true;  // 設置旗標為 true，防止遞迴
+                // 將訊息轉為 UTF-8 編碼格式傳遞
+                pybridge.logMessage(message);
+                window.console.log(message);   // 同時顯示在瀏覽器的開發者工具中
+                inLogMessage = false;  // 重置旗標
+            }
+        };
+
+        
+        // 監聽滑鼠右鍵點擊事件，傳送經緯度到 Python
+        /*
+        map.on("contextmenu", function (event) {
+            let lat = event.latlng.lat.toFixed(6);
+            let lng = event.latlng.lng.toFixed(6);
+        
+            console.log("Right-click at:", lat, lng);  // 測試用
+        
+            if (window.pybridge) {
+                window.pybridge.sendCoordinates(parseFloat(lat), parseFloat(lng));
+            }
+        });
+        */
+
+
+        // 右鍵選單 DOM
+        var contextMenu = document.getElementById("contextMenu");
+        var setStartBtn = document.getElementById("setStart");
+        var setEndBtn = document.getElementById("setEnd");
+        var setManualBtn = document.getElementById("setManual");
+
+
+
+        var highlightIcon = L.icon({
+            iconUrl: '/highlight-icon.png',
+            iconSize: [50, 50],
+            iconAnchor: [25, 50],
+            popupAnchor: [1, -34]
+        });
+
+
+        // 儲存所有標記
+        var markers = {};
+        var marker;
+        
+        var selectedMarker = null;//right click當前選擇的標記
+        function addMarker(lat, lng, name) {
+            // 直接用 `name` 作為 key
+            if (markers[name]) {
+                markers[name].remove();
+            }
+
+            let marker = L.marker([lat, lng]).addTo(map)
+                .bindPopup(`<b>${name}</b>`)
+                .on("click", function () {
+                    console.log(`selected : ${name}`);
+                    window.pybridge.sendData(name);
+                })
+                .on("contextmenu", function (e) {  // 右鍵事件
+                    selectedMarker = marker;
+                    showContextMenu(e.originalEvent, name);
+                });
+
+            markers[name] = marker;  // 以 `name` 存入
+        }
+        
+        // 顯示右鍵選單
+        function showContextMenu(event, name) {
+            event.preventDefault(); // 避免瀏覽器預設右鍵選單
+            contextMenu.style.top = `${event.pageY}px`;
+            contextMenu.style.left = `${event.pageX}px`;
+            contextMenu.style.display = "block";
+        }
+        // 設定起點
+        setStartBtn.addEventListener("click", function () {
+            if (selectedMarker) {
+                let markerName = selectedMarker.getPopup().getContent().replace("<b>", "").replace("</b>", ""); // 解析 popup 內容
+                window.pybridge.sendNode(markerName,1);
+                alert(`已設為起點: ${markerName}`);
+            }
+            hideContextMenu();
+        });
+
+        // 設定終點
+        setEndBtn.addEventListener("click", function () {
+            if (selectedMarker) {
+                let markerName = selectedMarker.getPopup().getContent().replace("<b>", "").replace("</b>", ""); // 解析 popup 內容
+                window.pybridge.sendNode(markerName,2);
+                alert(`已設為終點: ${markerName}`);
+            }
+            hideContextMenu();
+        });
+        
+        // 手動路徑
+        setManualBtn.addEventListener("click", function () {
+            if (selectedMarker) {
+                let markerName = selectedMarker.getPopup().getContent().replace("<b>", "").replace("</b>", ""); // 解析 popup 內容
+                window.pybridge.sendNode(markerName,3);
+                //alert(`已設為終點: ${markerName}`);
+            }
+            hideContextMenu();
+        });
+        
+        // 隱藏選單
+        function hideContextMenu() {
+            contextMenu.style.display = "none";
+        }
+
+        // 點擊地圖其他地方時關閉選單
+        map.on("click", hideContextMenu);
+        document.addEventListener("click", hideContextMenu);
+
+
+        // **變更標記圖示**
+        /*
+        function highlightMarkers(locationNames) {
+            for (const key in markers) {
+                let marker = markers[key];
+                let markerName = marker.getPopup().getContent().replace("<b>", "").replace("</b>", "");
+                console.log(`highlighted : ${markerName}`);
+                if (locationNames.includes(markerName)) {
+                    marker.setIcon(highlightIcon);  // 改變圖示
+                } else {
+                    marker.setIcon(new L.Icon.Default());  // 變回預設圖示
+                }
+            }
+        }
+        */
+
+        // **變更標記圖示（Highlight）**
+        function highlightMarkers(name, icon) {
+            if (icon==="Default") {
+                // **恢復預設標記**
+                if (markers[name]) {
+                    markers[name].setIcon(new L.Icon.Default());
+                }
+            } else {
+                // **高亮當前標記**
+
+                if (markers[name]) {
+                    markers[name].setIcon(highlightIcon);
+                }
+            }
+        }
+
+        // 新增移除標記函式
+        function removeMarker(name) {
+                        
+            if (markers[name]) {
+                markers[name].remove();
+                delete markers[name];
+                console.log(`removed highlight : ${name}`);
+            }
+        }
+
+
+        var edges = {};  // 存放所有繪製的線條，key 為 "startNode-endNode"
+
+        function drawEdges(edgesData) {
+            clearEdges();  // 先清除舊線條
+
+            edgesData.forEach(function(edge) {
+                var startNode = edge[0];
+                var endNode = edge[1];
+
+                if (markers[startNode] && markers[endNode]) {
+                    let startCoords = markers[startNode].getLatLng();
+                    let endCoords = markers[endNode].getLatLng();
+
+                    if (startCoords && endCoords) {
+                        var latlngs = [startCoords, endCoords];
+                        let polyline = L.polyline(latlngs, {
+                            color: 'lightgray',
+                            weight: 2,
+                            opacity: 0.7,
+                            smoothFactor: 1.5
+                        }).addTo(map);
+
+                        // 儲存 A-B 和 B-A 兩種 key，確保雙向查詢
+                        let edgeKey1 = `${startNode}-${endNode}`;
+                        let edgeKey2 = `${endNode}-${startNode}`;
+                        edges[edgeKey1] = polyline;
+                        edges[edgeKey2] = polyline;
+                    }
+                }
+            });
+
+            console.log(`${Object.keys(edges).length} edges drawn`);
+        }
+
+
+
+        function changeEdge(startNode, endNode, newColor, newWeight, newOpacity, newSmoothFactor) {
+            let edgeKey = `${startNode}-${endNode}`;
+
+            if (edges[edgeKey]) {
+                edges[edgeKey].setStyle({
+                    color: newColor, 
+                    weight: newWeight,
+                    opacity: newOpacity,
+                    smoothFactor: newSmoothFactor
+                });
+                console.log(`Changed edge : ${startNode} -> ${endNode} as ${newColor}`);
+            } else {
+                console.log(`Can not find ${startNode} -> ${endNode} edge`);
+            }
+        }
+
+        // 清除所有連線
+        function clearEdges() {
+            Object.values(edges).forEach(edge => map.removeLayer(edge));  // 遍歷物件的值
+            edges = {};  // 清空 edges
+            console.log("Cleared edges");
+        }
+
+
+
+
+    </script>
+</body>
+</html>
